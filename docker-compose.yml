@@ -1,0 +1,139 @@
+version: "3.9"
+name: media-suite
+services:
+
+  vpn:
+    container_name: vpn
+    image: qmcgaw/gluetun:latest
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER:-custom}
+      - OPENVPN_USER=${OPENVPN_USER:-""}
+      - OPENVPN_PASSWORD=${OPENVPN_PASSWORD:-""}
+      - VPN_TYPE=openvpn
+      - OPENVPN_CUSTOM_CONFIG=/gluetun/custom.conf
+    volumes:
+      - config/privado-dublin.ovpn:/gluetun/config.conf:ro
+    networks:
+      - netwarrk
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    ports:
+      - 5080:5080
+      - 6881:6881
+      - 6881:6881/udp
+      - 9696:9696
+    restart: "unless-stopped"
+
+  qbittorrent:
+    container_name: qbittorrent
+    image: lscr.io/linuxserver/qbittorrent:latest
+    depends_on:  
+      vpn:
+        condition: service_healthy
+    networks: 
+      - netwarrk
+    network_mode: service:vpn
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=UTC
+      - WEBUI_PORT=5080
+    volumes:
+      - qbittorrent-config:/config
+      - torrent-downloads:/downloads
+    restart: "unless-stopped"
+
+  radarr:
+    container_name: radarr
+    image: lscr.io/linuxserver/radarr:latest
+    networks:
+      netwarrk:
+        ipv4_address: ${RADARR_STATIC_CONTAINER_IP}
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=UTC
+    ports:
+      - 7878:7878
+    volumes:
+      - radarr-config:/config
+      - torrent-downloads:/downloads
+    restart: "unless-stopped"
+
+  sonarr:
+    image: linuxserver/sonarr:latest
+    container_name: sonarr
+    networks:
+      netwarrk:
+        ipv4_address: ${SONARR_STATIC_CONTAINER_IP}
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=UTC
+    volumes:
+      - sonarr-config:/config
+      - torrent-downloads:/downloads
+    ports:
+      - 8989:8989
+    restart: unless-stopped
+
+  prowlarr:
+    container_name: prowlarr
+    image: linuxserver/prowlarr:latest
+    depends_on:
+      vpn:
+        condition: service_healthy
+    network_mode: service:vpn
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=UTC
+    volumes:
+      - prowlarr-config:/config
+    restart: unless-stopped
+
+  recommendarr:
+    container_name: recommendarr
+    image: tannermiddleton/recommendarr:latest
+    networks:
+      - netwarrk
+    environment:
+      - NODE_ENV=production
+      - DOCKER_ENV=true
+      - PORT=3000
+      - PUBLIC_URL=${RECOMMENDARR_URL}
+    volumes:
+      - recommendarr-data:/app/server/data
+    ports:
+      - 443:3000
+    restart: unless-stopped
+
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    container_name: jellyseerr
+    networks:
+      - netwarrk
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=UTC
+    volumes:
+      - jellyseerr-config:/app/config
+    ports:
+      - 5055:5055
+    restart: unless-stopped
+
+volumes:
+  torrent-downloads:
+  radarr-config:
+  sonarr-config:
+  prowlarr-config:
+  qbittorrent-config:
+  jellyseerr-config:
+  recommendarr-data:
+
+networks:
+  netwarrk:
+    external: true
