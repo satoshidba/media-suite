@@ -12,18 +12,18 @@ Heavily derived from https://github.com/navilg/media-stack
 
 Requires environment variables passed in where appropriate, some VPN providers will differ but this works for me
 
-- OVPN_PATH - full path to a valid .ovpn file with your configuration, this must be available to the VPN container
-- OPENVPN_USER - OpenVPN user
-- OPENVPN_PASS - Password for OpenVPN user
-- MEDIA_MNT - Shared media location available to all containers, mine is a network share mounted to the docker host
-- SONARR_STATIC_CONTAINER_IP - IP address in your private docker network, this is to enable services that use the VPN to be able to locally access
-- RADARR_STATIC_CONTAINER_IP - IP address in your private docker network, this is to enable services that use the VPN to be able to locally access
-- READARR_STATIC_CONTAINER_IP - IP address in your private docker network, this is to enable services that use the VPN to be able to locally access
-- LIDARR_STATIC_CONTAINER_IP - IP address in your private docker network, this is to enable services that use the VPN to be able to locally access
-- PUID - Process ID user 
-- PGID - Process ID group
-- TZ - Timezone to be used
-- RECOMMENDARR_URL - This is the URL used for validation when connecting to the service
+- **OVPN_PATH** - full path to a valid .ovpn file with your configuration, this must be available to the VPN container
+- **OPENVPN_USER** - OpenVPN user
+- **OPENVPN_PASS** - Password for OpenVPN user
+- **MEDIA_MNT** - Shared media location available to all containers, mine is a network share mounted to the docker host
+- **SONARR_STATIC_CONTAINER_IP** - IP address in your private docker network, this is to enable services that use the VPN to be able to locally access
+- **RADARR_STATIC_CONTAINER_IP** - IP address in your private docker network, this is to enable services that use the VPN to be able to locally access
+- **READARR_STATIC_CONTAINER_IP** - IP address in your private docker network, this is to enable services that use the VPN to be able to locally access
+- **LIDARR_STATIC_CONTAINER_IP** - IP address in your private docker network, this is to enable services that use the VPN to be able to locally access
+- **PUID** - Process ID user 
+- **PGID** - Process ID group
+- **TZ** - Timezone to be used
+- **RECOMMENDARR_URL** - This is the URL used for validation when connecting to the service
 
 ## License
 
