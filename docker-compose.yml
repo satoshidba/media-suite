@@ -1,20 +1,19 @@
 version: "3.9"
 name: media-suite
 services:
-
   vpn:
     container_name: vpn
     image: qmcgaw/gluetun:latest
     cap_add:
       - NET_ADMIN
     environment:
-      - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER:-custom}
-      - OPENVPN_USER=${OPENVPN_USER:-""}
-      - OPENVPN_PASSWORD=${OPENVPN_PASSWORD:-""}
+      - VPN_SERVICE_PROVIDER=custom
+      - OPENVPN_USER=${OPENVPN_USER}
+      - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
       - VPN_TYPE=openvpn
       - OPENVPN_CUSTOM_CONFIG=/gluetun/custom.conf
     volumes:
-      - config/privado-dublin.ovpn:/gluetun/config.conf:ro
+      - ${OVPN_PATH}:/gluetun/custom.conf:ro
     networks:
       - netwarrk
     devices:
@@ -24,7 +23,8 @@ services:
       - 6881:6881
       - 6881:6881/udp
       - 9696:9696
-    restart: "unless-stopped"
+      - 7777:7777
+    restart: unless-stopped
 
   qbittorrent:
     container_name: qbittorrent
@@ -32,18 +32,32 @@ services:
     depends_on:  
       vpn:
         condition: service_healthy
-    networks: 
-      - netwarrk
     network_mode: service:vpn
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=UTC
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
       - WEBUI_PORT=5080
     volumes:
       - qbittorrent-config:/config
-      - torrent-downloads:/downloads
-    restart: "unless-stopped"
+      - ${MEDIA_MNT}/downloads:/downloads
+    restart: unless-stopped
+
+  sabnzbd:
+    image: lscr.io/linuxserver/sabnzbd:latest
+    depends_on:  
+      vpn:
+        condition: service_healthy
+    network_mode: service:vpn
+    container_name: sabnzbd
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - sabnzbd-config:/config
+      - ${MEDIA_MNT}/downloads:/downloads
+    restart: unless-stopped
 
   radarr:
     container_name: radarr
@@ -52,15 +66,16 @@ services:
       netwarrk:
         ipv4_address: ${RADARR_STATIC_CONTAINER_IP}
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=UTC
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
     ports:
       - 7878:7878
     volumes:
       - radarr-config:/config
-      - torrent-downloads:/downloads
-    restart: "unless-stopped"
+      - ${MEDIA_MNT}/downloads:/downloads
+      - ${MEDIA_MNT}/movies:/movies
+    restart: unless-stopped
 
   sonarr:
     image: linuxserver/sonarr:latest
@@ -69,15 +84,53 @@ services:
       netwarrk:
         ipv4_address: ${SONARR_STATIC_CONTAINER_IP}
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=UTC
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
     volumes:
       - sonarr-config:/config
-      - torrent-downloads:/downloads
+      - ${MEDIA_MNT}/downloads:/downloads
+      - ${MEDIA_MNT}/TV:/TV
     ports:
       - 8989:8989
     restart: unless-stopped
+
+  readarr:
+    image: lscr.io/linuxserver/readarr:develop
+    container_name: readarr
+    networks:
+      netwarrk:
+        ipv4_address: ${READARR_STATIC_CONTAINER_IP}
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - readarr-config:/config
+      - ${MEDIA_MNT}/books:/books
+      - ${MEDIA_MNT}/downloads:/downloads
+    ports:
+      - 8787:8787
+    restart: unless-stopped
+
+  lidarr:
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: lidarr
+    networks:
+      netwarrk:
+        ipv4_address: ${LIDARR_STATIC_CONTAINER_IP}
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - lidarr-config:/config
+      - ${MEDIA_MNT}/music:/music
+      - ${MEDIA_MNT}/downloads:/downloads
+    ports:
+      - 8686:8686
+    restart: unless-stopped
+
 
   prowlarr:
     container_name: prowlarr
@@ -87,9 +140,9 @@ services:
         condition: service_healthy
     network_mode: service:vpn
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=UTC
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
     volumes:
       - prowlarr-config:/config
     restart: unless-stopped
@@ -116,9 +169,9 @@ services:
     networks:
       - netwarrk
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=UTC
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
     volumes:
       - jellyseerr-config:/app/config
     ports:
@@ -126,11 +179,13 @@ services:
     restart: unless-stopped
 
 volumes:
-  torrent-downloads:
   radarr-config:
   sonarr-config:
+  readarr-config:
+  lidarr-config:
   prowlarr-config:
   qbittorrent-config:
+  sabnzbd-config:
   jellyseerr-config:
   recommendarr-data:
 
