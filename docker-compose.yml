@@ -178,6 +178,58 @@ services:
       - 5055:5055
     restart: unless-stopped
 
+  
+  #https://github.com/flmorg/cleanuperr/tree/main
+  cleanuperr:
+    image: ghcr.io/flmorg/cleanuperr:latest
+    restart: unless-stopped
+    volumes:
+      - cleanuperr-config:/var/logs
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - LOGGING__FILE__PATH=/var/logs/
+      - QUEUECLEANER__IGNORED_DOWNLOADS_PATH=/ignored.txt
+      - QUEUECLEANER__IMPORT_FAILED_MAX_STRIKES=5
+      - QUEUECLEANER__IMPORT_FAILED_IGNORE_PATTERNS__0=title mismatch
+      - QUEUECLEANER__IMPORT_FAILED_IGNORE_PATTERNS__1=manual import required
+      - QUEUECLEANER__STALLED_MAX_STRIKES=5
+      - QUEUECLEANER__SLOW_MAX_STRIKES=5
+      - QUEUECLEANER__SLOW_RESET_STRIKES_ON_PROGRESS=true
+      - QUEUECLEANER__SLOW_MIN_SPEED=1MB
+      - QUEUECLEANER__SLOW_MAX_TIME=20
+      - QUEUECLEANER__SLOW_IGNORE_ABOVE_SIZE=60GB
+      - CONTENTBLOCKER__ENABLED=true
+      - CONTENTBLOCKER__IGNORED_DOWNLOADS_PATH=/ignored.txt
+      - DOWNLOADCLEANER__ENABLED=true
+      - DOWNLOADCLEANER__IGNORED_DOWNLOADS_PATH=/ignored.txt
+      - DOWNLOADCLEANER__CATEGORIES__0__NAME=tv-sonarr
+      - DOWNLOADCLEANER__CATEGORIES__0__MAX_RATIO=-1
+      - DOWNLOADCLEANER__CATEGORIES__0__MIN_SEED_TIME=0
+      - DOWNLOADCLEANER__CATEGORIES__0__MAX_SEED_TIME=240
+      - DOWNLOADCLEANER__CATEGORIES__1__NAME=radarr
+      - DOWNLOADCLEANER__CATEGORIES__1__MAX_RATIO=-1
+      - DOWNLOADCLEANER__CATEGORIES__1__MIN_SEED_TIME=0
+      - DOWNLOADCLEANER__CATEGORIES__1__MAX_SEED_TIME=240
+      - DOWNLOAD_CLIENT=qBittorrent
+      - QBITTORRENT__URL=${QBTT_URL}
+      - QBITTORRENT__USERNAME=${QBTT_USER}
+      - QBITTORRENT__PASSWORD=${QBTT_PASSWORD}
+      - SONARR__ENABLED=true
+      - SONARR__SEARCHTYPE=Episode
+      - SONARR__BLOCK__PATH=${BLACKLIST}
+      - SONARR__INSTANCES__0__URL=http://${SONARR_STATIC_CONTAINER_IP}:8989
+      - SONARR__INSTANCES__0__APIKEY=${SONARR_API}
+      - RADARR__ENABLED=true
+      - RADARR__BLOCK__PATH=${BLACKLIST}
+      - RADARR__INSTANCES__0__URL=http://${RADARR_STATIC_CONTAINER_IP}:7878
+      - RADARR__INSTANCES__0__APIKEY=${RADARR_API}
+      - LIDARR__ENABLED=true
+      - LIDARR__BLOCK__PATH=${BLACKLIST}
+      - LIDARR__INSTANCES__0__URL=http://${LIDARR_STATIC_CONTAINER_IP}:8686
+      - LIDARR__INSTANCES__0__APIKEY=${LIDARR_API}
+
 volumes:
   radarr-config:
   sonarr-config:
@@ -188,6 +240,7 @@ volumes:
   sabnzbd-config:
   jellyseerr-config:
   recommendarr-data:
+  cleanuperr-config
 
 networks:
   netwarrk:
