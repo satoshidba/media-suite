@@ -178,13 +178,11 @@ services:
       - 5055:5055
     restart: unless-stopped
 
-  
-  #https://github.com/flmorg/cleanuperr/tree/main
   cleanuperr:
     image: ghcr.io/flmorg/cleanuperr:latest
-    restart: unless-stopped
-    volumes:
-      - cleanuperr-config:/var/logs
+    container_name: cleanuperr
+    networks:
+      - netwarrk
     environment:
       - TZ=${TZ}
       - PUID=${PUID}
@@ -229,6 +227,10 @@ services:
       - LIDARR__BLOCK__PATH=${BLACKLIST}
       - LIDARR__INSTANCES__0__URL=http://${LIDARR_STATIC_CONTAINER_IP}:8686
       - LIDARR__INSTANCES__0__APIKEY=${LIDARR_API}
+    volumes:
+      - cleanuperr-config:/var/logs
+    restart: unless-stopped
+    
 
 volumes:
   radarr-config:
@@ -240,7 +242,7 @@ volumes:
   sabnzbd-config:
   jellyseerr-config:
   recommendarr-data:
-  cleanuperr-config
+  cleanuperr-config:
 
 networks:
   netwarrk:
