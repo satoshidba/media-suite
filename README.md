@@ -24,3 +24,10 @@ Requires environment variables passed in where appropriate, some VPN providers w
 - **PGID** - Process ID group
 - **TZ** - Timezone to be used
 - **RECOMMENDARR_URL** - This is the URL used for validation when connecting to the service
+
+## My Setup
+I was using individual LXC containers previously but there was an additional overhead with configuration e.g. due to having to mount the shared drive to multiple locations. Decided to go down the route of a single LXC container (unprivileged) running Docker and Portainer for ease of deployment and configuration.
+
+For a hobby user, a docker container is the most effective method of getting up and running without much fuss but it's always good to at least harden your security to make it difficult for an exploit or attack to affect your wider system.
+
+A NAS provides the media storage layer, I've used a mounted NFS volume to the LXC container hosting Docker
