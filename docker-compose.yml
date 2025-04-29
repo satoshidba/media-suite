@@ -59,6 +59,21 @@ services:
       - ${MEDIA_MNT}/downloads:/downloads
     restart: unless-stopped
 
+  pinchflat:
+    container_name: pinchflat
+    image: ghcr.io/kieraneglin/pinchflat:latest
+    networks:
+      - netwarrk
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    ports:
+      - 8945:8945
+    volumes:
+      - pinchflat-config:/config
+      - ${MEDIA_MNT}/yt:/downloads
+
   radarr:
     container_name: radarr
     image: lscr.io/linuxserver/radarr:latest
@@ -130,7 +145,6 @@ services:
     ports:
       - 8686:8686
     restart: unless-stopped
-
 
   prowlarr:
     container_name: prowlarr
@@ -228,7 +242,6 @@ services:
       - cleanuperr-config:/var/logs
     restart: unless-stopped
     
-
 volumes:
   radarr-config:
   sonarr-config:
@@ -240,6 +253,7 @@ volumes:
   jellyseerr-config:
   recommendarr-data:
   cleanuperr-config:
+  pinchflat-config:
 
 networks:
   netwarrk:
